@@ -1,0 +1,188 @@
+---
+title: "DATA 607 Assignment 1"
+output: html_document
+---
+
+**Gehad Gad**
+
+**February 2nd, 2020**
+
+**Assignment 1**
+
+
+**Introduction**
+This data is about Breast Cancer findings, obtained from the University Medical Centre, Institute of Oncology, Ljubljana, Yugoslavia. 
+This data set includes 201 instances of one class and 85 instances of another class. The instances are described by 9 attributes, some of which are linear and some are nominal. 
+
+
+```{r}
+#Import libraries and/or Packages
+if (!require(dplyr)){
+install.packages("dplyr")
+library(dplyr)}
+if (!require(caTools)){
+install.packages("caTools")
+library(caTools)}
+if (!require(ggplot2)){
+install.packages("ggplot2")
+library(ggplot2)}
+
+```
+
+
+Read the data into R.Name the features of the data.
+
+```{r}
+
+BreastCancer <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer/breast-cancer.data", header=FALSE)
+
+names (BreastCancer)<-c("output","age","menopause","tumor_size","inv_nodes","node_caps", "deg_malig","breast","breast_quad","irradiat")
+
+```
+
+
+Display few rows from the data.
+
+```{r}
+head(BreastCancer)
+```
+
+```{r}
+#Display the head of the data.
+
+summary(BreastCancer)
+```
+
+
+```{r}
+#check for NA values in the data.
+
+sum(is.na(BreastCancer))
+```
+Also, there is not NA showing, there are some ? in the date appears in the summary view.
+
+
+```{r}
+#Replace ? values in node_caps columns:
+
+BreastCancer$node_caps[BreastCancer$node_caps=="?"]="yes"
+
+```
+
+
+```{r}
+#Replace any NA's values in node_caps
+
+BreastCancer$node_caps=ifelse(is.na(BreastCancer$node_caps),ave(BreastCancer$node_caps,FUN=function(x)"no"),BreastCancer$node_caps)
+```
+
+
+```{r}
+#Replace any ? values in breast_quad column.
+
+BreastCancer$breast_quad[BreastCancer$breast_quad=="?"]="left_low"
+```
+
+
+```{r}
+#Replace NA's values in left_low columns:
+
+BreastCancer$breast_quad=ifelse(is.na(BreastCancer$breast_quad),ave(BreastCancer$breast_quad,FUN=function(x)"left_low"),BreastCancer$breast_quad)
+```
+
+```{r}
+#Check the levels of any any column
+
+factor (BreastCancer$irradiat)
+```
+
+
+```{r}
+#Labeling the features
+
+
+BreastCancer$output= factor (BreastCancer$output, labels= c(0,1) , levels= c("no-recurrence-events", "recurrence-events"))
+
+BreastCancer$age= factor (BreastCancer$age,labels= c(0,1,2,3,4,5) , levels= c("20-29","30-39","40-49","50-59","60-69","70-79")) 
+
+BreastCancer$menopause= factor (BreastCancer$menopause, labels= c(0,1,2) , levels= c("premeno","ge40","lt40")) 
+
+BreastCancer$tumor_size= factor (BreastCancer$tumor_size, labels= c(0,1,2,3,4,5,6,7,8,9,10) , levels= c("0-4", "10-14", "15-19", "20-24","25-29", "30-34", "35-39","40-44","45-49","5-9","50-54")) 
+
+BreastCancer$inv_nodes= factor (BreastCancer$inv_nodes, labels= c(0,1,2,3,4,5,6) , levels= c("0-2", "12-14", "15-17", "24-26", "3-5", "6-8", "9-11"))
+
+
+BreastCancer$node_caps= factor (BreastCancer$node_caps, labels= c(0,1) , levels= c("2", "3"))
+
+BreastCancer$deg_malig= factor (BreastCancer$deg_malig, labels= c(0,1,2) , levels= c("1", "2", "3"))
+
+
+BreastCancer$breast= factor (BreastCancer$breast, labels= c(0,1) , levels= c("left", "right")) 
+
+BreastCancer$breast_quad= factor (BreastCancer$breast_quad, labels= c(0,1,2,3,4) , levels= c("2", "3", "4", "5", "6")) 
+
+BreastCancer$irradiat= factor (BreastCancer$irradiat, labels= c(0,1) , levels= c("yes", "no")) 
+
+```
+
+```{r}
+
+#Factorizing all features
+
+FeaturesNames = list ("output","age","menopause","tumor_size","inv_nodes","node_caps", "deg_malig","breast","breast_quad","irradiat")
+
+for(i in FeaturesNames){
+  BreastCancer[i] <- sapply (BreastCancer[i], as.factor)
+  
+}
+  
+  
+```
+
+
+```{r}
+#Split the data to input-output
+
+y= select(BreastCancer,c(1))
+
+x= select(BreastCancer,-c(output))
+
+```
+
+
+```{r}
+#Split the data to train and test data for more analysis and modeling.
+
+sample = sample.split(BreastCancer,SplitRatio = .75)
+Train = subset (BreastCancer, sample ==TRUE) 
+Test =  subset (BreastCancer, sample ==FALSE)
+
+```
+
+
+
+```{r}
+ggplot(data=BreastCancer,aes(x=age,fill=irradiat,))+geom_bar()
+```
+
+The graph above shows that ages between 20-29 did not expose to irriadiation, ages between 70-79 expose just little. But the majority of ages between 30 to 69 shows more exposure to irradiation. 
+
+
+```{r}
+ggplot(BreastCancer,aes(x= age,fill= output)) +
+  theme_bw() +
+  facet_wrap(~menopause) +
+  geom_bar()+
+  labs(y ="Freq",
+       title = "The Irradiat distribution by Age based on Menopause")
+
+```
+
+The graph above shows that distribution of irradiat based on age and menopause.
+
+
+
+**Conclusion**
+
+Data cleaning and processing is done. Since this data is classification, decision Tree can help us to visualize decision rules for predicting a categorical (classification tree).
+
